@@ -17,125 +17,22 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
     />
-    <script>
-      // 初始化資料 (至少 20 筆與維基百科相關的範例資料)
-   let items = [
-     { id: 1, title: 'Wikipedia', subtitle: '自由的網路百科全書', details: '提供多語言的百科內容，由志愿者撰寫與維護。', tags: ['百科', '網站'] },
-     { id: 2, title: 'Wikimedia Foundation', subtitle: '非營利組織', details: '維基媒體基金會是支援維基百科和其他維基計畫的非營利組織。', tags: ['組織', '基金會'] },
-     { id: 3, title: 'Wikitionary', subtitle: '維基詞典', details: '提供詞語定義、發音和語源等資訊的開放詞典。', tags: ['詞典'] },
-     { id: 4, title: 'Wikibooks', subtitle: '開放教科書', details: '包含免費教科書與教學資源的維基計畫。', tags: ['教育', '書籍'] },
-     { id: 5, title: 'Wikimedia Commons', subtitle: '自由媒體檔案庫', details: '存放圖片、音訊、影片等多媒體檔案，供維基計畫共用。', tags: ['媒體', '資源'] },
-     { id: 6, title: 'Wikidata', subtitle: '結構化資料庫', details: '維基資料為可機器讀取的知識庫，支援多個語言的資料重用。', tags: ['資料', '結構化'] },
-     { id: 7, title: 'Wikiquote', subtitle: '名言與引用', details: '收錄名言警句與來源的維基計畫。', tags: ['引用'] },
-     { id: 8, title: 'Wikiversity', subtitle: '開放學習資源', details: '促進學習資源與課程開發的維基計畫。', tags: ['教育'] },
-     { id: 9, title: 'Wikisource', subtitle: '原始文獻資料庫', details: '保存公共領域與自由版權文本的數位圖書館。', tags: ['文獻'] },
-     { id: 10, title: 'Wikipedia:Neutral point of view', subtitle: '中立觀點政策', details: '維基百科的重要編輯方針之一，要求內容保持中立。', tags: ['政策'] },
-     { id: 11, title: 'Wikipedia:Verifiability', subtitle: '可查證性', details: '條目應以可靠來源支持，可供讀者驗證。', tags: ['政策'] },
-     { id: 12, title: 'User talk', subtitle: '使用者討論頁面', details: '條目之外的討論與交流空間，用於溝通與協調。', tags: ['社群'] },
-     { id: 13, title: 'Edit war', subtitle: '編輯戰', details: '對條目內容反覆修改、回復的爭端行為。', tags: ['社群', '條目'] },
-     { id: 14, title: 'Stub', subtitle: '簡短條目', details: '需要擴充的短條目，通常會標記為 stub。', tags: ['條目'] },
-     { id: 15, title: 'Citation', subtitle: '引用來源', details: '用以支援條目資訊的來源註明。', tags: ['引用', '來源'] },
-     { id: 16, title: 'Talk page', subtitle: '討論頁', details: '條目相關的協作討論區域。', tags: ['社群'] },
-     { id: 17, title: 'Banner', subtitle: '橫幅與通告', details: '首頁或專頁上顯示重要資訊的圖示或文字。', tags: ['網站'] },
-     { id: 18, title: 'Bots', subtitle: '自動化工具', details: '用於自動化例行編輯或維護工作的程式。', tags: ['工具'] },
-     { id: 19, title: 'Page history', subtitle: '頁面歷史', details: '記錄每次編輯的變更與作者資訊。', tags: ['版本'] },
-     { id: 20, title: 'Namespace', subtitle: '名稱空間', details: '區分不同類型頁面的命名分類系統。', tags: ['網站', '結構'] },
-   ]
-
-   // 更新清單顯示
-   function updateList() {
-     const list = document.querySelector('ion-list')
-     const template = document.querySelector('.list-item')
-    // 清空除了 template 的內容 — 我們保留 template 在 DOM 作為範本
-    // 找到 template 元素，移除 list 中除 template 外的其他子節點
-    const templateNode = template
-    Array.from(list.children).forEach(child => {
-      if (child !== templateNode) child.remove()
-    })
-
-  // 取得搜尋與過濾條件（處理可能為 null 的情況）
-  const searchbarEl = document.querySelector('ion-searchbar')
-  const selectEl = document.querySelector('ion-select')
-  const search = (searchbarEl && (searchbarEl.value || ''))
-  const select = (selectEl && (selectEl.value || ''))
-  const q = (search || '').trim().toLowerCase()
-
-     // 過濾 items
-     const filtered = items.filter(item => {
-       // 分類過濾
-       if (select && !item.tags.includes(select)) return false
-       // 搜尋文字比對：在 title, subtitle, details, tags
-       if (!q) return true
-       if (item.title.toLowerCase().includes(q)) return true
-       if (item.subtitle.toLowerCase().includes(q)) return true
-       if (item.details.toLowerCase().includes(q)) return true
-       if (item.tags.join(' ').toLowerCase().includes(q)) return true
-       return false
-     })
-
-     // 根據過濾結果建立 DOM 元素
-     for (const it of filtered) {
-       const el = template.cloneNode(true)
-       el.classList.remove('list-item')
-       // 填入資料
-       el.querySelector('.item-title').textContent = it.title
-       el.querySelector('.item-subtitle').textContent = it.subtitle
-       el.querySelector('.item-details').textContent = it.details
-       // 清空 tag container
-       const tagContainer = el.querySelector('.tag-container')
-       tagContainer.innerHTML = ''
-       for (const t of it.tags) {
-         const chip = document.createElement('ion-chip')
-         chip.setAttribute('size', 'small')
-         chip.textContent = t
-         tagContainer.appendChild(chip)
-       }
-       list.appendChild(el)
-     }
-   }
-
-   // 初始化分類選項（從 items 推導）
-   function initCategories() {
-     const select = document.querySelector('ion-select')
-     const cats = new Set()
-     items.forEach(i => i.tags.forEach(t => cats.add(t)))
-     // 移除現有除了全部的選項 (value="")
-     const existing = Array.from(select.querySelectorAll('ion-select-option'))
-     existing.forEach(opt => {
-       if (opt.value !== '') opt.remove()
-     })
-     // 加入選項
-     Array.from(cats).sort().forEach(cat => {
-       const opt = document.createElement('ion-select-option')
-       opt.value = cat
-       opt.textContent = cat
-       select.appendChild(opt)
-     })
-   }
-
-   // 綁定搜尋與篩選事件
-   document.addEventListener('DOMContentLoaded', () => {
-     const searchbar = document.querySelector('ion-searchbar')
-     const select = document.querySelector('ion-select')
-     // 初始化分類
-     initCategories()
-    // 當搜尋內容改變時更新清單 (用 ionInput 可即時回應)
-    // 使用簡單 debounce 以避免輸入時過度觸發
-    function debounce(fn, wait) {
-      let t = null
-      return function (...args) {
-        clearTimeout(t)
-        t = setTimeout(() => fn.apply(this, args), wait)
+    <style>
+      .item-content {
+        width: 100%;
       }
-    }
-    const debouncedUpdate = debounce(() => updateList(), 150)
-    searchbar.addEventListener('ionInput', debouncedUpdate)
-     // 當選擇分類改變時更新清單
-     select.addEventListener('ionChange', () => updateList())
-     // 頁面載入時顯示清單
-     updateList()
-   })
-    </script>
+      .item-title {
+        font-weight: bold;
+        margin: 0.25rem 0;
+      }
+      .item-subtitle {
+        color: var(--ion-color-medium);
+        font-size: 0.9em;
+      }
+      .tag-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
         margin-top: 0.5rem;
       }
     </style>
@@ -172,6 +69,40 @@
         </ion-list>
       </ion-content>
     </ion-app>
-    
+    <script>
+      // 初始化資料 (至少 20 筆與維基百科相關範例資料)
+   let items = [
+     { id: 1, title: 'Wikipedia', subtitle: '自由的網路百科全書', details: '由全球志願者協作撰寫的多語言百科全書。', tags: ['百科', '網站'] },
+     { id: 2, title: 'Wikimedia Foundation', subtitle: '非營利組織', details: '支援維基百科與其他維基專案的基金會。', tags: ['組織'] },
+     { id: 3, title: 'Wikidata', subtitle: '結構化資料庫', details: '提供機器可讀、可重用的結構化資料集。', tags: ['資料'] },
+     { id: 4, title: 'Wikimedia Commons', subtitle: '多媒體檔案庫', details: '存放自由授權的圖片、音訊與影片。', tags: ['媒體'] },
+     { id: 5, title: 'Wikibooks', subtitle: '開放教科書', details: '合作撰寫與分享開放教科書與教材。', tags: ['教育'] },
+     { id: 6, title: 'Wiktionary', subtitle: '維基詞典', details: '多語言詞典，包含定義、發音與詞源。', tags: ['詞典'] },
+     { id: 7, title: 'Wikiquote', subtitle: '名言與引用', details: '收錄名人名言與引用來源。', tags: ['引用'] },
+     { id: 8, title: 'Wikisource', subtitle: '原始文獻庫', details: '保存公共領域或授權文本的數位文獻。', tags: ['文獻'] },
+     { id: 9, title: 'Wikiversity', subtitle: '開放學習', details: '促進自由學習資源與課程開發。', tags: ['教育'] },
+     { id: 10, title: 'Templates', subtitle: '樣板系統', details: '用於在頁面中重複顯示一致的資訊區塊。', tags: ['網站', '結構'] },
+     { id: 11, title: 'Namespaces', subtitle: '名稱空間', details: '區分條目、討論、用戶頁等不同頁面類型。', tags: ['結構'] },
+     { id: 12, title: 'Page history', subtitle: '頁面版本', details: '記錄每次編輯與變更，方便追溯與還原。', tags: ['版本'] },
+     { id: 13, title: 'Talk page', subtitle: '討論頁面', details: '條目與用戶間的協作與討論場所。', tags: ['社群'] },
+     { id: 14, title: 'Citations', subtitle: '引用與來源', details: '條目內容應以可靠來源支援與註明。', tags: ['引用'] },
+     { id: 15, title: 'Neutral point of view', subtitle: '中立觀點', details: '要求條目以中立角度呈現，避免立場偏頗。', tags: ['政策'] },
+     { id: 16, title: 'Verifiability', subtitle: '可查證性', details: '內容應可由可靠來源驗證。', tags: ['政策'] },
+     { id: 17, title: 'Bots', subtitle: '自動化工具', details: '自動化執行重複性維護任務的機器人帳號。', tags: ['工具'] },
+     { id: 18, title: 'Administrators', subtitle: '管理員', details: '受社群委任執行管理與維護任務的帳號。', tags: ['管理'] },
+     { id: 19, title: 'Edit war', subtitle: '編輯衝突', details: '對同一內容反覆還原或爭議的編輯行為。', tags: ['社群'] },
+     { id: 20, title: 'Stub', subtitle: '短條目', details: '需要擴充的短條目，會被標示為 stub。', tags: ['條目'] },
+   ]
+
+   // 更新清單顯示
+   function updateList() {
+     const list = document.querySelector('ion-list')
+     const template = document.querySelector('.list-item')
+     list.textContent = ''
+
+     // 根據搜尋和過濾條件更新清單
+     // ...
+   }
+   </script>
   </body>
 </html>
