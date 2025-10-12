@@ -17,25 +17,97 @@
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/@ionic/core/css/ionic.bundle.css"
     />
-    <style>
-      .item-content {
-        width: 100%;
-      }
-      .item-title {
-        font-weight: bold;
-        margin: 0.25rem 0;
-      }
-      .item-subtitle {
-        color: var(--ion-color-medium);
-        font-size: 0.9em;
-      }
-      .tag-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
-      }
-    </style>
+<style>
+  .item-content {
+    width: 100%;
+  }
+  .item-title {
+    font-weight: bold;
+    margin: 0.25rem 0;
+  }
+  .item-subtitle {
+    color: var(--ion-color-medium);
+    font-size: 0.9em;
+  }
+  .tag-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+/* 中型螢幕 (768px以上) */
+@media (min-width: 768px) {
+  .list-item {
+    --padding-start: 1.5rem;
+    --padding-end: 1.5rem;
+  }
+  
+  .item-title {
+    font-size: 1.1rem;
+  }
+}
+
+/* 大型螢幕 (992px以上) */
+@media (min-width: 992px) {
+  ion-app {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .list-item {
+    --padding-start: 2rem;
+    --padding-end: 2rem;
+  }
+  
+  .item-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: start;
+  }
+  
+  .item-title {
+    flex: 1;
+    min-width: 200px;
+    font-size: 1.2rem;
+  }
+  
+  .item-subtitle {
+    flex: 1;
+    min-width: 200px;
+    margin: 0;
+  }
+  
+  .item-details {
+    flex: 2;
+    min-width: 300px;
+    margin: 0;
+    padding: 0 1rem;
+  }
+  
+  .tag-container {
+    flex: 0 0 auto;
+    margin: 0;
+    justify-content: flex-end;
+  }
+  
+  /* 頭部優化 */
+  ion-header {
+    padding: 0 2rem;
+  }
+  
+  ion-toolbar {
+    display: flex;
+    gap: 2rem;
+  }
+  
+  ion-searchbar {
+    flex: 1;
+    max-width: 400px;
+  }
+}
+</style>
+
   </head>
   <body>
     <ion-app>
