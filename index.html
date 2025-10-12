@@ -70,39 +70,70 @@
       </ion-content>
     </ion-app>
     <script>
+      let searchbar = document.querySelector('ion-searchbar')
+      let list = document.querySelector('ion-list')
+      let template = document.querySelector('.list-item')
+
       // 初始化資料 (至少 20 筆與維基百科相關範例資料)
-   let items = [
-     { id: 1, title: 'Wikipedia', subtitle: '自由的網路百科全書', details: '由全球志願者協作撰寫的多語言百科全書。', tags: ['百科', '網站'] },
-     { id: 2, title: 'Wikimedia Foundation', subtitle: '非營利組織', details: '支援維基百科與其他維基專案的基金會。', tags: ['組織'] },
-     { id: 3, title: 'Wikidata', subtitle: '結構化資料庫', details: '提供機器可讀、可重用的結構化資料集。', tags: ['資料'] },
-     { id: 4, title: 'Wikimedia Commons', subtitle: '多媒體檔案庫', details: '存放自由授權的圖片、音訊與影片。', tags: ['媒體'] },
-     { id: 5, title: 'Wikibooks', subtitle: '開放教科書', details: '合作撰寫與分享開放教科書與教材。', tags: ['教育'] },
-     { id: 6, title: 'Wiktionary', subtitle: '維基詞典', details: '多語言詞典，包含定義、發音與詞源。', tags: ['詞典'] },
-     { id: 7, title: 'Wikiquote', subtitle: '名言與引用', details: '收錄名人名言與引用來源。', tags: ['引用'] },
-     { id: 8, title: 'Wikisource', subtitle: '原始文獻庫', details: '保存公共領域或授權文本的數位文獻。', tags: ['文獻'] },
-     { id: 9, title: 'Wikiversity', subtitle: '開放學習', details: '促進自由學習資源與課程開發。', tags: ['教育'] },
-     { id: 10, title: 'Templates', subtitle: '樣板系統', details: '用於在頁面中重複顯示一致的資訊區塊。', tags: ['網站', '結構'] },
-     { id: 11, title: 'Namespaces', subtitle: '名稱空間', details: '區分條目、討論、用戶頁等不同頁面類型。', tags: ['結構'] },
-     { id: 12, title: 'Page history', subtitle: '頁面版本', details: '記錄每次編輯與變更，方便追溯與還原。', tags: ['版本'] },
-     { id: 13, title: 'Talk page', subtitle: '討論頁面', details: '條目與用戶間的協作與討論場所。', tags: ['社群'] },
-     { id: 14, title: 'Citations', subtitle: '引用與來源', details: '條目內容應以可靠來源支援與註明。', tags: ['引用'] },
-     { id: 15, title: 'Neutral point of view', subtitle: '中立觀點', details: '要求條目以中立角度呈現，避免立場偏頗。', tags: ['政策'] },
-     { id: 16, title: 'Verifiability', subtitle: '可查證性', details: '內容應可由可靠來源驗證。', tags: ['政策'] },
-     { id: 17, title: 'Bots', subtitle: '自動化工具', details: '自動化執行重複性維護任務的機器人帳號。', tags: ['工具'] },
-     { id: 18, title: 'Administrators', subtitle: '管理員', details: '受社群委任執行管理與維護任務的帳號。', tags: ['管理'] },
-     { id: 19, title: 'Edit war', subtitle: '編輯衝突', details: '對同一內容反覆還原或爭議的編輯行為。', tags: ['社群'] },
-     { id: 20, title: 'Stub', subtitle: '短條目', details: '需要擴充的短條目，會被標示為 stub。', tags: ['條目'] },
-   ]
+      const items = [
+        { id: 1, title: 'Wikipedia', subtitle: '自由的網路百科全書', details: '由全球志願者協作撰寫的多語言百科全書。', tags: ['百科', '網站'] },
+        { id: 2, title: 'Wikimedia Foundation', subtitle: '非營利組織', details: '支援維基百科與其他維基專案的基金會。', tags: ['組織'] },
+        { id: 3, title: 'Wikidata', subtitle: '結構化資料庫', details: '提供機器可讀、可重用的結構化資料集。', tags: ['資料'] },
+        { id: 4, title: 'Wikimedia Commons', subtitle: '多媒體檔案庫', details: '存放自由授權的圖片、音訊與影片。', tags: ['媒體'] },
+        { id: 5, title: 'Wikibooks', subtitle: '開放教科書', details: '合作撰寫與分享開放教科書與教材。', tags: ['教育'] },
+        { id: 6, title: 'Wiktionary', subtitle: '維基詞典', details: '多語言詞典，包含定義、發音與詞源。', tags: ['詞典'] },
+        { id: 7, title: 'Wikiquote', subtitle: '名言與引用', details: '收錄名人名言與引用來源。', tags: ['引用'] },
+        { id: 8, title: 'Wikisource', subtitle: '原始文獻庫', details: '保存公共領域或授權文本的數位文獻。', tags: ['文獻'] },
+        { id: 9, title: 'Wikiversity', subtitle: '開放學習', details: '促進自由學習資源與課程開發。', tags: ['教育'] },
+        { id: 10, title: 'Templates', subtitle: '樣板系統', details: '用於在頁面中重複顯示一致的資訊區塊。', tags: ['網站', '結構'] },
+        { id: 11, title: 'Namespaces', subtitle: '名稱空間', details: '區分條目、討論、用戶頁等不同頁面類型。', tags: ['結構'] },
+        { id: 12, title: 'Page history', subtitle: '頁面版本', details: '記錄每次編輯與變更，方便追溯與還原。', tags: ['版本'] },
+        { id: 13, title: 'Talk page', subtitle: '討論頁面', details: '條目與用戶間的協作與討論場所。', tags: ['社群'] },
+        { id: 14, title: 'Citations', subtitle: '引用與來源', details: '條目內容應以可靠來源支援與註明。', tags: ['引用'] },
+        { id: 15, title: 'Neutral point of view', subtitle: '中立觀點', details: '要求條目以中立角度呈現，避免立場偏頗。', tags: ['政策'] },
+        { id: 16, title: 'Verifiability', subtitle: '可查證性', details: '內容應可由可靠來源驗證。', tags: ['政策'] },
+        { id: 17, title: 'Bots', subtitle: '自動化工具', details: '自動化執行重複性維護任務的機器人帳號。', tags: ['工具'] },
+        { id: 18, title: 'Administrators', subtitle: '管理員', details: '受社群委任執行管理與維護任務的帳號。', tags: ['管理'] },
+        { id: 19, title: 'Edit war', subtitle: '編輯衝突', details: '對同一內容反覆還原或爭議的編輯行為。', tags: ['社群'] },
+        { id: 20, title: 'Stub', subtitle: '短條目', details: '需要擴充的短條目，會被標示為 stub。', tags: ['條目'] },
+        { id: 21, title: 'Community', subtitle: '志願者社群', details: '維基計畫由全球志願者社群共同維護。', tags: ['社群'] }
+      ]
 
-   // 更新清單顯示
-   function updateList() {
-     const list = document.querySelector('ion-list')
-     const template = document.querySelector('.list-item')
-     list.textContent = ''
+      // 更新清單顯示
+      function updateList() {
+       list.innerText = '' // 清空現有清單
 
-     // 根據搜尋和過濾條件更新清單
-     // ...
-   }
-   </script>
+
+        for (const item of items) {
+          if (
+            !searchbar.value || 
+            item.title
+            .toLocaleLowerCase()
+            .includes(searchbar.value.toLocaleLowerCase()) ||
+            item.subtitle
+            .toLocaleLowerCase()
+            .includes(searchbar.value.toLocaleLowerCase())
+        ) {
+            const clone = template.cloneNode(true)
+            clone.querySelector('.item-title').textContent = item.title
+            clone.querySelector('.item-subtitle').textContent = item.subtitle
+            clone.querySelector('.item-details').textContent = item.details
+            const tagContainer = clone.querySelector('.tag-container')
+            for (const tag of item.tags) {
+              const chip = document.createElement('ion-chip')
+              chip.textContent = tag
+              tagContainer.appendChild(chip)
+            }
+            list.appendChild(clone)
+          }
+        }
+      }
+      updateList()
+   searchbar.addEventListener('ionInput', event => {
+     // 實作搜尋邏輯
+     console.log(searchbar.value)
+     updateList()
+   })
+    </script>
   </body>
 </html>
