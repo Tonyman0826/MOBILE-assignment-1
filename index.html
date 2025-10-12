@@ -35,6 +35,12 @@
         margin: 8px;
         border: 1px solid var(--ion-color-light-shade);
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .custom-card:active {
+        transform: scale(0.98);
+        background: var(--custom-primary-light);
       }
 
       .search-header {
@@ -44,6 +50,12 @@
       .category-badge {
         margin: 2px;
         font-size: 0.8em;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .category-badge:active {
+        transform: scale(0.95);
       }
 
       .empty-state {
@@ -71,6 +83,11 @@
         justify-content: flex-end;
       }
 
+      .favorite-icon {
+        color: var(--custom-warning);
+        margin-right: 8px;
+      }
+
       /* 響應式設計 */
       @media (max-width: 768px) {
         .desktop-only {
@@ -80,6 +97,10 @@
         .tag-container {
           justify-content: flex-start;
           margin-top: 0.5rem;
+        }
+        
+        .mobile-full-width {
+          width: 100%;
         }
       }
 
@@ -91,7 +112,7 @@
         .custom-card:hover {
           transform: translateY(-2px);
           box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-          transition: all 0.3s ease;
+          border-color: var(--custom-primary);
         }
       }
 
@@ -107,131 +128,238 @@
         }
       }
 
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateX(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
       .fade-in {
         animation: fadeIn 0.3s ease-out;
+      }
+
+      .slide-in {
+        animation: slideIn 0.3s ease-out;
+      }
+
+      /* 載入狀態 */
+      .skeleton-loader {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+        border-radius: 4px;
+      }
+
+      @keyframes loading {
+        0% {
+          background-position: 200% 0;
+        }
+        100% {
+          background-position: -200% 0;
+        }
+      }
+
+      /* 錯誤狀態 */
+      .error-state {
+        text-align: center;
+        padding: 2rem;
+        color: var(--custom-danger);
+      }
+
+      /* 初始化載入狀態 */
+      .init-loading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 200px;
+        flex-direction: column;
       }
     </style>
   </head>
   <body>
     <ion-app>
-      <!-- 主頁面 -->
-      <ion-header class="search-header">
-        <ion-toolbar>
-          <ion-title>維基主題清單</ion-title>
-          
-          <ion-buttons slot="end">
-            <ion-button id="theme-toggle" fill="clear">
-              <ion-icon slot="icon-only" name="contrast"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
+      <!-- 初始化載入狀態 -->
+      <div id="init-loading" class="init-loading">
+        <ion-spinner name="crescent" style="width: 40px; height: 40px;"></ion-spinner>
+        <p style="margin-top: 16px; color: var(--custom-medium);">應用程式載入中...</p>
+      </div>
 
-        <!-- 搜索區域 -->
-        <ion-toolbar>
-          <ion-searchbar 
-            placeholder="搜尋主題..."
-            animated="true"
-            debounce="300"
-            id="main-searchbar">
-          </ion-searchbar>
-        </ion-toolbar>
+      <!-- 主頁面內容 (初始隱藏) -->
+      <div id="main-content" style="display: none;">
+        <ion-header class="search-header">
+          <ion-toolbar>
+            <ion-title>維基主題清單</ion-title>
+            
+            <ion-buttons slot="end">
+              <ion-button id="theme-toggle" fill="clear">
+                <ion-icon slot="icon-only" name="contrast"></ion-icon>
+              </ion-button>
+              <ion-button id="info-button" fill="clear">
+                <ion-icon slot="icon-only" name="information-circle"></ion-icon>
+              </ion-button>
+            </ion-buttons>
+          </ion-toolbar>
 
-        <!-- 分類篩選 -->
-        <ion-toolbar>
-          <ion-segment value="all" id="category-segment">
-            <ion-segment-button value="all">
-              <ion-label>全部</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="education">
-              <ion-label>教育</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="community">
-              <ion-label>社群</ion-label>
-            </ion-segment-button>
-            <ion-segment-button value="tools">
-              <ion-label>工具</ion-label>
-            </ion-segment-button>
-          </ion-segment>
-        </ion-toolbar>
-      </ion-header>
+          <!-- 搜索區域 -->
+          <ion-toolbar>
+            <ion-searchbar 
+              placeholder="搜尋主題..."
+              animated="true"
+              debounce="300"
+              id="main-searchbar">
+            </ion-searchbar>
+          </ion-toolbar>
 
-      <ion-content fullscreen="true">
-        <!-- 響應式佈局 -->
-        <ion-grid fixed>
-          <ion-row>
-            <!-- 桌面端側邊欄 -->
-            <ion-col size="12" size-md="3" class="desktop-only">
-              <ion-list>
-                <ion-list-header>
-                  <ion-label>快速篩選</ion-label>
-                </ion-list-header>
-                
-                <ion-item button id="filter-all">
-                  <ion-label>全部主題</ion-label>
-                  <ion-badge slot="end" color="primary">21</ion-badge>
-                </ion-item>
-                
-                <ion-item button id="filter-education">
-                  <ion-label>教育學習</ion-label>
-                  <ion-badge slot="end" color="success">2</ion-badge>
-                </ion-item>
-                
-                <ion-item button id="filter-community">
-                  <ion-label>社群管理</ion-label>
-                  <ion-badge slot="end" color="danger">4</ion-badge>
-                </ion-item>
-                
-                <ion-item button id="filter-tools">
-                  <ion-label>工具資源</ion-label>
-                  <ion-badge slot="end" color="warning">3</ion-badge>
-                </ion-item>
-              </ion-list>
-            </ion-col>
+          <!-- 分類篩選 -->
+          <ion-toolbar>
+            <ion-segment value="all" id="category-segment">
+              <ion-segment-button value="all">
+                <ion-label>全部</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="education">
+                <ion-label>教育</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="community">
+                <ion-label>社群</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="tools">
+                <ion-label>工具</ion-label>
+              </ion-segment-button>
+              <ion-segment-button value="favorites">
+                <ion-label>收藏</ion-label>
+              </ion-segment-button>
+            </ion-segment>
+          </ion-toolbar>
+        </ion-header>
 
-            <!-- 主要內容區域 -->
-            <ion-col size="12" size-md="9">
-              <!-- 下拉刷新 -->
-              <ion-refresher slot="fixed" id="content-refresher">
-                <ion-refresher-content
-                  pulling-icon="lines"
-                  refreshing-spinner="crescent">
-                </ion-refresher-content>
-              </ion-refresher>
+        <ion-content fullscreen="true">
+          <!-- 篩選狀態顯示 -->
+          <div id="filter-status" class="filter-status" style="display: none;"></div>
 
-              <!-- 主題列表 -->
-              <ion-list lines="full" id="theme-list">
-                <!-- 列表內容由 JavaScript 動態生成 -->
-              </ion-list>
+          <!-- 響應式佈局 -->
+          <ion-grid fixed>
+            <ion-row>
+              <!-- 桌面端側邊欄 -->
+              <ion-col size="12" size-md="3" class="desktop-only">
+                <ion-list class="slide-in">
+                  <ion-list-header>
+                    <ion-label>快速篩選</ion-label>
+                    <ion-button fill="clear" size="small" id="clear-filters">
+                      <ion-icon name="refresh" slot="icon-only"></ion-icon>
+                    </ion-button>
+                  </ion-list-header>
+                  
+                  <ion-item button id="filter-all" color="primary">
+                    <ion-icon name="apps" slot="start"></ion-icon>
+                    <ion-label>全部主題</ion-label>
+                    <ion-badge slot="end" color="primary" id="count-all">0</ion-badge>
+                  </ion-item>
+                  
+                  <ion-item button id="filter-education">
+                    <ion-icon name="school" slot="start"></ion-icon>
+                    <ion-label>教育學習</ion-label>
+                    <ion-badge slot="end" color="success" id="count-education">0</ion-badge>
+                  </ion-item>
+                  
+                  <ion-item button id="filter-community">
+                    <ion-icon name="people" slot="start"></ion-icon>
+                    <ion-label>社群管理</ion-label>
+                    <ion-badge slot="end" color="danger" id="count-community">0</ion-badge>
+                  </ion-item>
+                  
+                  <ion-item button id="filter-tools">
+                    <ion-icon name="construct" slot="start"></ion-icon>
+                    <ion-label>工具資源</ion-label>
+                    <ion-badge slot="end" color="warning" id="count-tools">0</ion-badge>
+                  </ion-item>
 
-              <!-- 無限滾動 -->
-              <ion-infinite-scroll id="infinite-scroll">
-                <ion-infinite-scroll-content
-                  loading-spinner="bubbles"
-                  loading-text="載入更多主題...">
-                </ion-infinite-scroll-content>
-              </ion-infinite-scroll>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-content>
+                  <ion-item button id="filter-favorites">
+                    <ion-icon name="star" slot="start"></ion-icon>
+                    <ion-label>我的收藏</ion-label>
+                    <ion-badge slot="end" color="warning" id="count-favorites">0</ion-badge>
+                  </ion-item>
+                </ion-list>
 
-      <!-- 浮動操作按鈕 -->
-      <ion-fab vertical="bottom" horizontal="end" slot="fixed">
-        <ion-fab-button id="main-fab">
-          <ion-icon name="add"></ion-icon>
-        </ion-fab-button>
-        <ion-fab-list side="top">
-          <ion-fab-button color="success" id="fab-new">
-            <ion-icon name="create"></ion-icon>
+                <!-- 統計資訊 -->
+                <ion-list class="slide-in" style="margin-top: 1rem;">
+                  <ion-list-header>
+                    <ion-label>統計資訊</ion-label>
+                  </ion-list-header>
+                  <ion-item>
+                    <ion-label>總主題數</ion-label>
+                    <ion-note slot="end" id="total-count">0</ion-note>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label>收藏數</ion-label>
+                    <ion-note slot="end" id="favorite-count">0</ion-note>
+                  </ion-item>
+                  <ion-item>
+                    <ion-label>分類數</ion-label>
+                    <ion-note slot="end" id="category-count">0</ion-note>
+                  </ion-item>
+                </ion-list>
+              </ion-col>
+
+              <!-- 主要內容區域 -->
+              <ion-col size="12" size-md="9">
+                <!-- 下拉刷新 -->
+                <ion-refresher slot="fixed" id="content-refresher">
+                  <ion-refresher-content
+                    pulling-icon="lines"
+                    refreshing-spinner="crescent">
+                  </ion-refresher-content>
+                </ion-refresher>
+
+                <!-- 載入狀態 -->
+                <div id="loading-state" style="display: none;">
+                  <div class="skeleton-loader" style="height: 80px; margin: 8px; border-radius: 12px;"></div>
+                  <div class="skeleton-loader" style="height: 80px; margin: 8px; border-radius: 12px;"></div>
+                  <div class="skeleton-loader" style="height: 80px; margin: 8px; border-radius: 12px;"></div>
+                </div>
+
+                <!-- 主題列表 -->
+                <ion-list lines="full" id="theme-list">
+                  <!-- 列表內容由 JavaScript 動態生成 -->
+                </ion-list>
+
+                <!-- 無限滾動 -->
+                <ion-infinite-scroll id="infinite-scroll">
+                  <ion-infinite-scroll-content
+                    loading-spinner="bubbles"
+                    loading-text="載入更多主題...">
+                  </ion-infinite-scroll-content>
+                </ion-infinite-scroll>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-content>
+
+        <!-- 浮動操作按鈕 -->
+        <ion-fab vertical="bottom" horizontal="end" slot="fixed">
+          <ion-fab-button id="main-fab">
+            <ion-icon name="ellipsis-vertical"></ion-icon>
           </ion-fab-button>
-          <ion-fab-button color="warning" id="fab-filter">
-            <ion-icon name="filter"></ion-icon>
-          </ion-fab-button>
-          <ion-fab-button color="tertiary" id="fab-sort">
-            <ion-icon name="swap-vertical"></ion-icon>
-          </ion-fab-button>
-        </ion-fab-list>
-      </ion-fab>
+          <ion-fab-list side="top">
+            <ion-fab-button color="success" id="fab-new" data-action="create">
+              <ion-icon name="create"></ion-icon>
+            </ion-fab-button>
+            <ion-fab-button color="warning" id="fab-filter" data-action="filter">
+              <ion-icon name="filter"></ion-icon>
+            </ion-fab-button>
+            <ion-fab-button color="tertiary" id="fab-sort" data-action="sort">
+              <ion-icon name="swap-vertical"></ion-icon>
+            </ion-fab-button>
+            <ion-fab-button color="primary" id="fab-scroll-top" data-action="scrollTop">
+              <ion-icon name="chevron-up"></ion-icon>
+            </ion-fab-button>
+          </ion-fab-list>
+        </ion-fab>
+      </div>
     </ion-app>
 
     <!-- 設定模態框 -->
@@ -259,7 +387,7 @@
           </ion-item>
           
           <ion-item>
-            <ion-select label="主題色彩" value="blue">
+            <ion-select label="主題色彩" id="theme-color-select">
               <ion-select-option value="blue">藍色主題</ion-select-option>
               <ion-select-option value="green">綠色主題</ion-select-option>
               <ion-select-option value="purple">紫色主題</ion-select-option>
@@ -269,359 +397,597 @@
       </ion-content>
     </ion-modal>
 
+    <!-- 資訊模態框 -->
+    <ion-modal trigger="info-button" id="info-modal">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>關於應用程式</ion-title>
+          <ion-buttons slot="end">
+            <ion-button id="close-info-modal">
+              <ion-icon name="close"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-list>
+          <ion-item>
+            <ion-icon name="logo-ionic" slot="start" color="primary"></ion-icon>
+            <ion-label>
+              <h3>維基主題清單</h3>
+              <p>版本 1.0.0</p>
+            </ion-label>
+          </ion-item>
+          <ion-item>
+            <ion-label class="ion-text-wrap">
+              <h4>功能特色</h4>
+              <p>• 主題搜索與篩選</p>
+              <p>• 分類管理</p>
+              <p>• 收藏功能</p>
+              <p>• 響應式設計</p>
+            </ion-label>
+          </ion-item>
+        </ion-list>
+      </ion-content>
+    </ion-modal>
+
     <script>
       /**
-       * Ionic 主題清單應用程式 - 完整整合版本
-       * 結合原有功能與 Ionic 最佳實踐
+       * 事件管理器 - 統一管理所有事件處理
+       */
+      class EventManager {
+        constructor() {
+          this.handlers = new Map();
+          this.debounceTimers = new Map();
+        }
+
+        /**
+         * 註冊事件監聽器
+         */
+        on(element, event, handler, options = {}) {
+          if (!element) {
+            console.warn('無法註冊事件: 元素為 null', event);
+            return () => {};
+          }
+          
+          if (!this.handlers.has(element)) {
+            this.handlers.set(element, new Map());
+          }
+          
+          const wrappedHandler = this.wrapHandler(handler, options);
+          element.addEventListener(event, wrappedHandler, options);
+          this.handlers.get(element).set(event, wrappedHandler);
+          
+          return () => this.off(element, event);
+        }
+
+        /**
+         * 移除事件監聽器
+         */
+        off(element, event) {
+          if (this.handlers.has(element)) {
+            const handlers = this.handlers.get(element);
+            if (handlers.has(event)) {
+              element.removeEventListener(event, handlers.get(event));
+              handlers.delete(event);
+            }
+          }
+        }
+
+        /**
+         * 包裝處理器（支持防抖、節流）
+         */
+        wrapHandler(handler, options) {
+          let wrappedHandler = handler;
+
+          if (options.debounce) {
+            wrappedHandler = this.debounce(handler, options.debounce);
+          }
+
+          if (options.throttle) {
+            wrappedHandler = this.throttle(handler, options.throttle);
+          }
+
+          return wrappedHandler;
+        }
+
+        /**
+         * 防抖函數
+         */
+        debounce(func, wait) {
+          return (...args) => {
+            const key = func.toString();
+            clearTimeout(this.debounceTimers.get(key));
+            this.debounceTimers.set(key, setTimeout(() => func(...args), wait));
+          };
+        }
+
+        /**
+         * 節流函數
+         */
+        throttle(func, limit) {
+          let inThrottle;
+          return (...args) => {
+            if (!inThrottle) {
+              func.apply(this, args);
+              inThrottle = true;
+              setTimeout(() => inThrottle = false, limit);
+            }
+          };
+        }
+
+        /**
+         * 一次性事件
+         */
+        once(element, event, handler) {
+          return this.on(element, event, handler, { once: true });
+        }
+
+        /**
+         * 清理所有事件
+         */
+        destroy() {
+          for (const [element, events] of this.handlers) {
+            for (const [event, handler] of events) {
+              element.removeEventListener(event, handler);
+            }
+          }
+          this.handlers.clear();
+          this.debounceTimers.clear();
+        }
+      }
+
+      /**
+       * DOM 操作管理器
+       */
+      class DOMManager {
+        /**
+         * 安全查詢元素
+         */
+        static query(selector, parent = document) {
+          try {
+            const element = parent.querySelector(selector);
+            return element;
+          } catch (error) {
+            console.warn('DOM Query Error:', error.message);
+            return null;
+          }
+        }
+
+        /**
+         * 安全查詢多個元素
+         */
+        static queryAll(selector, parent = document) {
+          try {
+            return Array.from(parent.querySelectorAll(selector));
+          } catch (error) {
+            console.warn('DOM QueryAll Error:', error.message);
+            return [];
+          }
+        }
+
+        /**
+         * 創建元素
+         */
+        static create(tag, options = {}) {
+          const element = document.createElement(tag);
+          
+          if (options.classes) {
+            element.className = options.classes;
+          }
+          
+          if (options.attributes) {
+            Object.entries(options.attributes).forEach(([key, value]) => {
+              element.setAttribute(key, value);
+            });
+          }
+          
+          if (options.properties) {
+            Object.entries(options.properties).forEach(([key, value]) => {
+              element[key] = value;
+            });
+          }
+          
+          if (options.html) {
+            element.innerHTML = options.html;
+          } else if (options.text) {
+            element.textContent = options.text;
+          }
+          
+          if (options.children) {
+            options.children.forEach(child => {
+              if (child instanceof Node) {
+                element.appendChild(child);
+              }
+            });
+          }
+          
+          return element;
+        }
+
+        /**
+         * 顯示/隱藏元素
+         */
+        static toggleVisibility(selector, show) {
+          const element = this.query(selector);
+          if (element) {
+            element.style.display = show ? '' : 'none';
+          }
+        }
+      }
+
+      /**
+       * 資料管理器
+       */
+      class DataManager {
+        constructor() {
+          this.items = [];
+          this.filters = {
+            search: '',
+            category: 'all',
+            favorites: false
+          };
+        }
+
+        /**
+         * 初始化資料
+         */
+        initializeData() {
+          this.items = [
+            { id: 1, title: 'Wikipedia', subtitle: '自由的網路百科全書', details: '由全球志願者協作撰寫的多語言百科全書。', tags: ['百科', '網站'], category: 'education', favorite: false },
+            { id: 2, title: 'Wikimedia Foundation', subtitle: '非營利組織', details: '支援維基百科與其他維基專案的基金會。', tags: ['組織'], category: 'community', favorite: true },
+            { id: 3, title: 'Wikidata', subtitle: '結構化資料庫', details: '提供機器可讀、可重用的結構化資料集。', tags: ['資料'], category: 'tools', favorite: false },
+            { id: 4, title: 'Wikimedia Commons', subtitle: '多媒體檔案庫', details: '存放自由授權的圖片、音訊與影片。', tags: ['媒體'], category: 'tools', favorite: false },
+            { id: 5, title: 'Wikibooks', subtitle: '開放教科書', details: '合作撰寫與分享開放教科書與教材。', tags: ['教育'], category: 'education', favorite: true },
+            // ... 其他資料項目保持不變
+            { id: 21, title: 'Community', subtitle: '志願者社群', details: '維基計畫由全球志願者社群共同維護。', tags: ['社群'], category: 'community', favorite: true }
+          ];
+          return this.items;
+        }
+
+        /**
+         * 過濾資料
+         */
+        filterItems() {
+          return this.items.filter(item => {
+            const matchesSearch = !this.filters.search || 
+              item.title.toLowerCase().includes(this.filters.search) ||
+              item.subtitle.toLowerCase().includes(this.filters.search) ||
+              item.details.toLowerCase().includes(this.filters.search) ||
+              item.tags.some(tag => tag.toLowerCase().includes(this.filters.search));
+            
+            const matchesCategory = this.filters.category === 'all' || 
+              item.category === this.filters.category;
+            
+            const matchesFavorites = !this.filters.favorites || item.favorite;
+            
+            return matchesSearch && matchesCategory && matchesFavorites;
+          });
+        }
+
+        /**
+         * 更新篩選條件
+         */
+        updateFilters(newFilters) {
+          this.filters = { ...this.filters, ...newFilters };
+          return this.filterItems();
+        }
+
+        /**
+         * 切換收藏狀態
+         */
+        toggleFavorite(itemId) {
+          const item = this.items.find(item => item.id === itemId);
+          if (item) {
+            item.favorite = !item.favorite;
+            return item.favorite;
+          }
+          return false;
+        }
+
+        /**
+         * 獲取統計資料
+         */
+        getStatistics() {
+          const total = this.items.length;
+          const favorites = this.items.filter(item => item.favorite).length;
+          const categories = new Set(this.items.map(item => item.category)).size;
+          
+          const categoryCounts = {
+            all: total,
+            education: this.items.filter(item => item.category === 'education').length,
+            community: this.items.filter(item => item.category === 'community').length,
+            tools: this.items.filter(item => item.category === 'tools').length,
+            favorites: favorites
+          };
+
+          return { total, favorites, categories, categoryCounts };
+        }
+      }
+
+      /**
+       * Ionic 主題清單應用程式
        */
       class IonicThemeListApp {
         constructor() {
+          this.eventManager = new EventManager();
+          this.dataManager = new DataManager();
           this.currentTheme = 'light';
-          this.filteredItems = [];
-          this.allItems = this.initializeData();
-          this.currentSegment = 'all';
-          this.currentSearch = '';
           this.isLoading = false;
-          
-          // Ionic 元件引用
-          this.ionElements = {};
+          this.isInitialized = false;
         }
 
         /**
-         * 初始化應用程式資料
+         * 初始化應用程式
          */
-        initializeData() {
-          return [
-            { 
-              id: 1, 
-              title: 'Wikipedia', 
-              subtitle: '自由的網路百科全書', 
-              details: '由全球志願者協作撰寫的多語言百科全書。', 
-              tags: ['百科', '網站'],
-              category: 'education',
-              favorite: false
-            },
-            { 
-              id: 2, 
-              title: 'Wikimedia Foundation', 
-              subtitle: '非營利組織', 
-              details: '支援維基百科與其他維基專案的基金會。', 
-              tags: ['組織'],
-              category: 'community',
-              favorite: true
-            },
-            { 
-              id: 3, 
-              title: 'Wikidata', 
-              subtitle: '結構化資料庫', 
-              details: '提供機器可讀、可重用的結構化資料集。', 
-              tags: ['資料'],
-              category: 'tools',
-              favorite: false
-            },
-            { 
-              id: 4, 
-              title: 'Wikimedia Commons', 
-              subtitle: '多媒體檔案庫', 
-              details: '存放自由授權的圖片、音訊與影片。', 
-              tags: ['媒體'],
-              category: 'tools',
-              favorite: false
-            },
-            { 
-              id: 5, 
-              title: 'Wikibooks', 
-              subtitle: '開放教科書', 
-              details: '合作撰寫與分享開放教科書與教材。', 
-              tags: ['教育'],
-              category: 'education',
-              favorite: true
-            },
-            { 
-              id: 6, 
-              title: 'Wiktionary', 
-              subtitle: '維基詞典', 
-              details: '多語言詞典，包含定義、發音與詞源。', 
-              tags: ['詞典'],
-              category: 'education',
-              favorite: false
-            },
-            { 
-              id: 7, 
-              title: 'Wikiquote', 
-              subtitle: '名言與引用', 
-              details: '收錄名人名言與引用來源。', 
-              tags: ['引用'],
-              category: 'education',
-              favorite: false
-            },
-            { 
-              id: 8, 
-              title: 'Wikisource', 
-              subtitle: '原始文獻庫', 
-              details: '保存公共領域或授權文本的數位文獻。', 
-              tags: ['文獻'],
-              category: 'education',
-              favorite: false
-            },
-            { 
-              id: 9, 
-              title: 'Wikiversity', 
-              subtitle: '開放學習', 
-              details: '促進自由學習資源與課程開發。', 
-              tags: ['教育'],
-              category: 'education',
-              favorite: false
-            },
-            { 
-              id: 10, 
-              title: 'Templates', 
-              subtitle: '樣板系統', 
-              details: '用於在頁面中重複顯示一致的資訊區塊。', 
-              tags: ['網站', '結構'],
-              category: 'tools',
-              favorite: false
-            },
-            { 
-              id: 11, 
-              title: 'Namespaces', 
-              subtitle: '名稱空間', 
-              details: '區分條目、討論、用戶頁等不同頁面類型。', 
-              tags: ['結構'],
-              category: 'tools',
-              favorite: false
-            },
-            { 
-              id: 12, 
-              title: 'Page history', 
-              subtitle: '頁面版本', 
-              details: '記錄每次編輯與變更，方便追溯與還原。', 
-              tags: ['版本'],
-              category: 'tools',
-              favorite: false
-            },
-            { 
-              id: 13, 
-              title: 'Talk page', 
-              subtitle: '討論頁面', 
-              details: '條目與用戶間的協作與討論場所。', 
-              tags: ['社群'],
-              category: 'community',
-              favorite: false
-            },
-            { 
-              id: 14, 
-              title: 'Citations', 
-              subtitle: '引用與來源', 
-              details: '條目內容應以可靠來源支援與註明。', 
-              tags: ['引用'],
-              category: 'education',
-              favorite: false
-            },
-            { 
-              id: 15, 
-              title: 'Neutral point of view', 
-              subtitle: '中立觀點', 
-              details: '要求條目以中立角度呈現，避免立場偏頗。', 
-              tags: ['政策'],
-              category: 'community',
-              favorite: false
-            },
-            { 
-              id: 16, 
-              title: 'Verifiability', 
-              subtitle: '可查證性', 
-              details: '內容應可由可靠來源驗證。', 
-              tags: ['政策'],
-              category: 'community',
-              favorite: false
-            },
-            { 
-              id: 17, 
-              title: 'Bots', 
-              subtitle: '自動化工具', 
-              details: '自動化執行重複性維護任務的機器人帳號。', 
-              tags: ['工具'],
-              category: 'tools',
-              favorite: false
-            },
-            { 
-              id: 18, 
-              title: 'Administrators', 
-              subtitle: '管理員', 
-              details: '受社群委任執行管理與維護任務的帳號。', 
-              tags: ['管理'],
-              category: 'community',
-              favorite: false
-            },
-            { 
-              id: 19, 
-              title: 'Edit war', 
-              subtitle: '編輯衝突', 
-              details: '對同一內容反覆還原或爭議的編輯行為。', 
-              tags: ['社群'],
-              category: 'community',
-              favorite: false
-            },
-            { 
-              id: 20, 
-              title: 'Stub', 
-              subtitle: '短條目', 
-              details: '需要擴充的短條目，會被標示為 stub。', 
-              tags: ['條目'],
-              category: 'education',
-              favorite: false
-            },
-            { 
-              id: 21, 
-              title: 'Community', 
-              subtitle: '志願者社群', 
-              details: '維基計畫由全球志願者社群共同維護。', 
-              tags: ['社群'],
-              category: 'community',
-              favorite: true
-            }
+        async initializeApp() {
+          try {
+            console.log('開始初始化應用程式...');
+            
+            // 顯示載入狀態
+            DOMManager.toggleVisibility('#init-loading', true);
+            DOMManager.toggleVisibility('#main-content', false);
+
+            // 等待 Ionic 元件完全註冊
+            await this.waitForIonicComponents();
+            
+            // 初始化資料
+            this.dataManager.initializeData();
+            
+            // 設置事件監聽器
+            this.setupEventListeners();
+            
+            // 初始渲染
+            this.render();
+            
+            // 隱藏載入狀態，顯示主內容
+            DOMManager.toggleVisibility('#init-loading', false);
+            DOMManager.toggleVisibility('#main-content', true);
+            
+            this.isInitialized = true;
+            console.log('應用程式初始化完成');
+            
+          } catch (error) {
+            console.error('應用程式初始化失敗:', error);
+            this.showErrorState('應用程式初始化失敗: ' + error.message);
+          }
+        }
+
+        /**
+         * 等待 Ionic 元件註冊完成
+         */
+        async waitForIonicComponents() {
+          const components = [
+            'ion-segment',
+            'ion-searchbar', 
+            'ion-refresher',
+            'ion-infinite-scroll',
+            'ion-list',
+            'ion-modal',
+            'ion-toast',
+            'ion-action-sheet',
+            'ion-loading'
           ];
-        }
 
-        /**
-         * 初始化 Ionic 元件
-         */
-        async initializeIonicComponents() {
-          // 等待 Ionic 元件註冊完成
-          await customElements.whenDefined('ion-segment');
+          const promises = components.map(component => 
+            customElements.whenDefined(component)
+          );
+
+          await Promise.all(promises);
+          console.log('所有 Ionic 元件已註冊完成');
           
-          // 獲取 Ionic 元件引用
-          this.ionElements = {
-            searchbar: document.querySelector('#main-searchbar'),
-            segment: document.querySelector('#category-segment'),
-            refresher: document.querySelector('#content-refresher'),
-            infiniteScroll: document.querySelector('#infinite-scroll'),
-            list: document.querySelector('#theme-list'),
-            modal: document.querySelector('#settings-modal')
-          };
-
-          // 設置 Ionic 元件事件監聽器
-          this.setupIonicEvents();
+          // 額外等待以確保元件完全初始化
+          await new Promise(resolve => setTimeout(resolve, 100));
         }
 
         /**
-         * 設置 Ionic 元件事件
+         * 設置事件監聽器
          */
-        setupIonicEvents() {
-          // Ionic 搜索欄事件
-          this.ionElements.searchbar.addEventListener('ionInput', (ev) => {
-            this.handleSearch(ev.detail.value);
+        setupEventListeners() {
+          // 安全的元素查詢
+          const searchbar = DOMManager.query('#main-searchbar');
+          const segment = DOMManager.query('#category-segment');
+          const refresher = DOMManager.query('#content-refresher');
+          const infiniteScroll = DOMManager.query('#infinite-scroll');
+
+          if (searchbar) {
+            this.eventManager.on(
+              searchbar,
+              'ionInput',
+              (ev) => this.handleSearch(ev.detail.value),
+              { debounce: 300 }
+            );
+          }
+
+          if (segment) {
+            this.eventManager.on(
+              segment,
+              'ionChange',
+              (ev) => this.handleCategoryChange(ev.detail.value)
+            );
+          }
+
+          if (refresher) {
+            this.eventManager.on(
+              refresher,
+              'ionRefresh',
+              (ev) => this.handleRefresh(ev)
+            );
+          }
+
+          if (infiniteScroll) {
+            this.eventManager.on(
+              infiniteScroll,
+              'ionInfinite',
+              (ev) => this.handleInfiniteScroll(ev)
+            );
+          }
+
+          // 快速篩選事件
+          ['all', 'education', 'community', 'tools', 'favorites'].forEach(category => {
+            const element = DOMManager.query(`#filter-${category}`);
+            if (element) {
+              this.eventManager.on(
+                element,
+                'click',
+                () => this.handleQuickFilter(category)
+              );
+            }
           });
 
-          // Ionic 分段控制事件
-          this.ionElements.segment.addEventListener('ionChange', (ev) => {
-            this.handleSegmentChange(ev.detail.value);
+          // FAB 動作事件
+          ['create', 'filter', 'sort', 'scrollTop'].forEach(action => {
+            const element = DOMManager.query(`#fab-${action}`);
+            if (element) {
+              this.eventManager.on(
+                element,
+                'click',
+                () => this.handleFabAction(action)
+              );
+            }
           });
 
-          // Ionic 下拉刷新事件
-          this.ionElements.refresher.addEventListener('ionRefresh', (ev) => {
-            this.handleRefresh(ev);
-          });
+          // 清除篩選事件
+          const clearFilters = DOMManager.query('#clear-filters');
+          if (clearFilters) {
+            this.eventManager.on(
+              clearFilters,
+              'click',
+              () => this.clearAllFilters()
+            );
+          }
 
-          // Ionic 無限滾動事件
-          this.ionElements.infiniteScroll.addEventListener('ionInfinite', (ev) => {
-            this.handleInfiniteScroll(ev);
-          });
-
-          // 側邊欄篩選事件
-          document.querySelectorAll('#filter-all, #filter-education, #filter-community, #filter-tools').forEach(btn => {
-            btn.addEventListener('click', (ev) => {
-              const filterType = ev.currentTarget.id.replace('filter-', '');
-              this.handleQuickFilter(filterType);
-            });
-          });
-
-          // FAB 按鈕事件
-          document.querySelector('#fab-new').addEventListener('click', () => {
-            this.showCreateModal();
-          });
-
-          document.querySelector('#fab-filter').addEventListener('click', () => {
-            this.showAdvancedFilter();
-          });
-
-          document.querySelector('#fab-sort').addEventListener('click', () => {
-            this.showSortOptions();
-          });
-
-          // 模態框事件
-          document.querySelector('#close-modal').addEventListener('click', () => {
-            this.ionElements.modal.dismiss();
-          });
-
-          document.querySelector('#dark-mode-toggle').addEventListener('ionChange', (ev) => {
-            this.toggleTheme(ev.detail.checked);
-          });
+          // 鍵盤事件
+          this.eventManager.on(
+            document,
+            'keydown',
+            (ev) => this.handleKeyboard(ev)
+          );
         }
 
         /**
          * 處理搜索
          */
         handleSearch(searchTerm) {
-          this.currentSearch = searchTerm.toLowerCase();
-          this.filterItems();
+          if (!this.isInitialized) return;
+          
+          const filteredItems = this.dataManager.updateFilters({ 
+            search: searchTerm.toLowerCase() 
+          });
+          this.renderFilteredItems(filteredItems);
+          this.updateFilterStatus();
         }
 
         /**
-         * 處理分段變化
+         * 處理分類變化
          */
-        handleSegmentChange(segmentValue) {
-          this.currentSegment = segmentValue;
-          this.filterItems();
+        handleCategoryChange(category) {
+          if (!this.isInitialized) return;
+          
+          const isFavorites = category === 'favorites';
+          const filteredItems = this.dataManager.updateFilters({
+            category: isFavorites ? 'all' : category,
+            favorites: isFavorites
+          });
+          this.renderFilteredItems(filteredItems);
+          this.updateFilterStatus();
         }
 
         /**
          * 處理快速篩選
          */
-        handleQuickFilter(filterType) {
-          this.currentSegment = filterType === 'all' ? 'all' : filterType;
-          this.ionElements.segment.value = this.currentSegment;
-          this.filterItems();
+        handleQuickFilter(category) {
+          const segment = DOMManager.query('#category-segment');
+          if (segment) {
+            segment.value = category;
+          }
+          this.handleCategoryChange(category);
         }
 
         /**
-         * 過濾項目
+         * 處理下拉刷新
          */
-        filterItems() {
-          this.filteredItems = this.allItems.filter(item => {
-            // 搜索過濾
-            const matchesSearch = !this.currentSearch || 
-              item.title.toLowerCase().includes(this.currentSearch) ||
-              item.subtitle.toLowerCase().includes(this.currentSearch) ||
-              item.details.toLowerCase().includes(this.currentSearch) ||
-              item.tags.some(tag => tag.toLowerCase().includes(this.currentSearch));
-            
-            // 分類過濾
-            const matchesCategory = this.currentSegment === 'all' || 
-              item.category === this.currentSegment;
-            
-            return matchesSearch && matchesCategory;
-          });
+        async handleRefresh(event) {
+          this.showLoading(true);
           
-          this.renderList();
+          try {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            this.render();
+            this.showToast('重新整理完成', 'success');
+          } catch (error) {
+            this.showToast('重新整理失敗', 'danger');
+          } finally {
+            this.showLoading(false);
+            if (event && event.target) {
+              event.target.complete();
+            }
+          }
         }
 
         /**
-         * 渲染列表
+         * 處理無限滾動
          */
-        renderList() {
-          const list = this.ionElements.list;
-          list.innerHTML = '';
+        async handleInfiniteScroll(event) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          if (event && event.target) {
+            event.target.complete();
+          }
+        }
 
-          if (this.filteredItems.length === 0) {
+        /**
+         * 處理 FAB 動作
+         */
+        handleFabAction(action) {
+          const actions = {
+            create: () => this.showToast('創建新主題功能', 'primary'),
+            filter: () => this.showToast('進階篩選功能', 'primary'),
+            sort: () => this.showSortOptions(),
+            scrollTop: () => this.scrollToTop()
+          };
+          
+          if (actions[action]) {
+            actions[action]();
+          }
+        }
+
+        /**
+         * 處理鍵盤事件
+         */
+        handleKeyboard(event) {
+          if (!this.isInitialized) return;
+          
+          switch (event.key) {
+            case 'Escape':
+              this.closeAllModals();
+              break;
+            case '/':
+              if (!event.ctrlKey && !event.metaKey) {
+                event.preventDefault();
+                const searchbar = DOMManager.query('#main-searchbar');
+                if (searchbar) {
+                  searchbar.setFocus();
+                }
+              }
+              break;
+          }
+        }
+
+        /**
+         * 渲染過濾後的項目
+         */
+        renderFilteredItems(filteredItems) {
+          const list = DOMManager.query('#theme-list');
+          if (!list) return;
+          
+          if (filteredItems.length === 0) {
             this.showEmptyState();
             return;
           }
 
-          this.filteredItems.forEach(item => {
-            const ionItem = this.createListItem(item);
-            list.appendChild(ionItem);
+          list.innerHTML = '';
+          filteredItems.forEach(item => {
+            const listItem = this.createListItem(item);
+            list.appendChild(listItem);
           });
         }
 
@@ -629,51 +995,67 @@
          * 創建列表項目
          */
         createListItem(item) {
-          const ionItem = document.createElement('ion-item');
-          ionItem.classList.add('custom-card', 'fade-in');
-          ionItem.button = true;
-          ionItem.detail = true;
+          const ionItem = DOMManager.create('ion-item', {
+            classes: 'custom-card fade-in',
+            properties: {
+              button: true,
+              detail: true
+            }
+          });
 
-          // 使用 Ionic 網格佈局
-          const grid = document.createElement('ion-grid');
-          const row = document.createElement('ion-row');
-          const colContent = document.createElement('ion-col');
-          const colTags = document.createElement('ion-col');
-          
-          // 響應式佈局
-          colContent.size = '12';
-          colContent.sizeMd = '8';
-          colTags.size = '12';
-          colTags.sizeMd = '4';
+          const grid = DOMManager.create('ion-grid');
+          const row = DOMManager.create('ion-row');
+          const colContent = DOMManager.create('ion-col', {
+            attributes: {
+              'size': '12',
+              'size-md': '8'
+            }
+          });
+          const colTags = DOMManager.create('ion-col', {
+            attributes: {
+              'size': '12', 
+              'size-md': '4'
+            }
+          });
 
           // 內容區域
-          const content = `
+          const favoriteIcon = item.favorite ? 
+            '<ion-icon name="star" class="favorite-icon"></ion-icon>' : '';
+          
+          colContent.innerHTML = `
             <ion-label>
-              <h2 style="font-weight: 600; margin-bottom: 4px;">${item.title}</h2>
+              <h2 style="font-weight: 600; margin-bottom: 4px; display: flex; align-items: center;">
+                ${favoriteIcon}${item.title}
+              </h2>
               <p style="color: var(--ion-color-medium); margin-bottom: 8px;">${item.subtitle}</p>
               <p style="font-size: 0.9em; color: var(--ion-color-step-600); line-height: 1.4;">${item.details}</p>
             </ion-label>
           `;
-          colContent.innerHTML = content;
 
           // 標籤區域
-          const tagsContainer = document.createElement('div');
-          tagsContainer.className = 'tag-container';
-          
+          const tagsContainer = DOMManager.create('div', {
+            classes: 'tag-container'
+          });
+
           item.tags.forEach(tag => {
-            const badge = document.createElement('ion-badge');
-            badge.className = 'category-badge';
-            badge.textContent = tag;
+            const badge = DOMManager.create('ion-badge', {
+              classes: 'category-badge',
+              properties: {
+                textContent: tag
+              }
+            });
+
+            // 設置顏色
             badge.color = this.getTagColor(tag);
-            
-            badge.addEventListener('click', (e) => {
+
+            this.eventManager.on(badge, 'click', (e) => {
               e.stopPropagation();
               this.handleTagClick(tag);
             });
-            
+
             tagsContainer.appendChild(badge);
           });
-          
+
           colTags.appendChild(tagsContainer);
 
           // 組合元件
@@ -683,7 +1065,7 @@
           ionItem.appendChild(grid);
 
           // 點擊事件
-          ionItem.addEventListener('click', () => {
+          this.eventManager.on(ionItem, 'click', () => {
             this.showItemDetail(item);
           });
 
@@ -691,80 +1073,22 @@
         }
 
         /**
-         * 獲取標籤顏色
-         */
-        getTagColor(tag) {
-          const colorMap = {
-            '教育': 'success',
-            '詞典': 'success', 
-            '學習': 'success',
-            '社群': 'danger',
-            '組織': 'danger',
-            '管理': 'danger',
-            '政策': 'warning',
-            '結構': 'warning',
-            '版本': 'warning',
-            '媒體': 'tertiary',
-            '資料': 'tertiary',
-            '網站': 'tertiary',
-            '百科': 'primary',
-            '文獻': 'primary',
-            '引用': 'primary',
-            '工具': 'dark',
-            '條目': 'secondary'
-          };
-          
-          return colorMap[tag] || 'primary';
-        }
-
-        /**
-         * 處理標籤點擊
-         */
-        handleTagClick(tag) {
-          this.ionElements.searchbar.value = tag;
-          this.handleSearch(tag);
-          this.showToast(`已篩選標籤: ${tag}`);
-        }
-
-        /**
-         * 顯示空狀態
-         */
-        showEmptyState() {
-          const emptyState = document.createElement('div');
-          emptyState.className = 'empty-state';
-          emptyState.innerHTML = `
-            <ion-icon name="search-outline"></ion-icon>
-            <h3>沒有找到相關內容</h3>
-            <p>請嘗試調整搜索條件或選擇其他分類</p>
-            <ion-button fill="clear" onclick="app.handleQuickFilter('all')">
-              顯示所有主題
-            </ion-button>
-          `;
-          this.ionElements.list.appendChild(emptyState);
-        }
-
-        /**
          * 顯示項目詳情
          */
         async showItemDetail(item) {
-          const actionSheet = document.createElement('ion-action-sheet');
+          const actionSheet = DOMManager.create('ion-action-sheet');
           actionSheet.header = item.title;
           actionSheet.subHeader = item.subtitle;
           actionSheet.buttons = [
             {
               text: item.favorite ? '取消收藏' : '加入收藏',
               icon: item.favorite ? 'star-outline' : 'star',
-              handler: () => this.toggleFavorite(item)
+              handler: () => this.toggleFavorite(item.id)
             },
             {
               text: '分享主題',
-              icon: 'share',
+              icon: 'share', 
               handler: () => this.shareItem(item)
-            },
-            {
-              text: '查看詳情',
-              icon: 'information',
-              handler: () => this.viewDetails(item)
             },
             {
               text: '取消',
@@ -780,13 +1104,185 @@
         /**
          * 切換收藏狀態
          */
-        async toggleFavorite(item) {
-          item.favorite = !item.favorite;
+        toggleFavorite(itemId) {
+          const wasFavorite = this.dataManager.toggleFavorite(itemId);
           this.showToast(
-            item.favorite ? '已加入收藏' : '已取消收藏',
-            item.favorite ? 'success' : 'medium'
+            wasFavorite ? '已加入收藏' : '已取消收藏',
+            wasFavorite ? 'success' : 'medium'
           );
-          this.filterItems(); // 重新渲染以更新UI
+          this.render();
+          this.updateStatistics();
+        }
+
+        /**
+         * 處理標籤點擊
+         */
+        handleTagClick(tag) {
+          const searchbar = DOMManager.query('#main-searchbar');
+          if (searchbar) {
+            searchbar.value = tag;
+          }
+          this.handleSearch(tag);
+          this.showToast(`已篩選標籤: ${tag}`);
+        }
+
+        /**
+         * 顯示空狀態
+         */
+        showEmptyState() {
+          const list = DOMManager.query('#theme-list');
+          if (!list) return;
+          
+          list.innerHTML = `
+            <div class="empty-state">
+              <ion-icon name="search-outline"></ion-icon>
+              <h3>沒有找到相關內容</h3>
+              <p>請嘗試調整搜索條件或選擇其他分類</p>
+              <ion-button fill="clear" onclick="app.clearAllFilters()">
+                顯示所有主題
+              </ion-button>
+            </div>
+          `;
+        }
+
+        /**
+         * 顯示錯誤狀態
+         */
+        showErrorState(message) {
+          const initLoading = DOMManager.query('#init-loading');
+          if (initLoading) {
+            initLoading.innerHTML = `
+              <div class="error-state">
+                <ion-icon name="warning" style="font-size: 3rem;"></ion-icon>
+                <h3>載入失敗</h3>
+                <p>${message}</p>
+                <ion-button onclick="location.reload()">
+                  重新載入
+                </ion-button>
+              </div>
+            `;
+          }
+        }
+
+        /**
+         * 更新篩選狀態顯示
+         */
+        updateFilterStatus() {
+          const statusElement = DOMManager.query('#filter-status');
+          if (!statusElement) return;
+          
+          const filters = this.dataManager.filters;
+          let statusText = '';
+
+          if (filters.search) {
+            statusText += `搜索: "${filters.search}" `;
+          }
+          if (filters.category !== 'all') {
+            statusText += `分類: ${filters.category} `;
+          }
+          if (filters.favorites) {
+            statusText += '僅收藏 ';
+          }
+
+          if (statusText) {
+            statusElement.style.display = 'block';
+            statusElement.innerHTML = `
+              <ion-item>
+                <ion-label>篩選條件: ${statusText}</ion-label>
+                <ion-button fill="clear" size="small" onclick="app.clearAllFilters()">
+                  <ion-icon name="close-circle" slot="icon-only"></ion-icon>
+                </ion-button>
+              </ion-item>
+            `;
+          } else {
+            statusElement.style.display = 'none';
+          }
+        }
+
+        /**
+         * 更新統計資訊
+         */
+        updateStatistics() {
+          const stats = this.dataManager.getStatistics();
+          
+          // 安全更新元素
+          const elements = [
+            { id: 'total-count', value: stats.total },
+            { id: 'favorite-count', value: stats.favorites },
+            { id: 'category-count', value: stats.categories },
+            { id: 'count-all', value: stats.categoryCounts.all },
+            { id: 'count-education', value: stats.categoryCounts.education },
+            { id: 'count-community', value: stats.categoryCounts.community },
+            { id: 'count-tools', value: stats.categoryCounts.tools },
+            { id: 'count-favorites', value: stats.categoryCounts.favorites }
+          ];
+
+          elements.forEach(({ id, value }) => {
+            const element = DOMManager.query(`#${id}`);
+            if (element) {
+              element.textContent = value.toString();
+            }
+          });
+        }
+
+        /**
+         * 清除所有篩選條件
+         */
+        clearAllFilters() {
+          const searchbar = DOMManager.query('#main-searchbar');
+          const segment = DOMManager.query('#category-segment');
+          
+          if (searchbar) searchbar.value = '';
+          if (segment) segment.value = 'all';
+          
+          this.dataManager.updateFilters({
+            search: '',
+            category: 'all', 
+            favorites: false
+          });
+          this.render();
+          
+          const statusElement = DOMManager.query('#filter-status');
+          if (statusElement) {
+            statusElement.style.display = 'none';
+          }
+        }
+
+        /**
+         * 顯示/隱藏載入狀態
+         */
+        showLoading(show) {
+          DOMManager.toggleVisibility('#loading-state', show);
+          DOMManager.toggleVisibility('#theme-list', !show);
+        }
+
+        /**
+         * 滾動到頂部
+         */
+        scrollToTop() {
+          const content = DOMManager.query('ion-content');
+          if (content) {
+            content.scrollToTop(500);
+          }
+        }
+
+        /**
+         * 關閉所有模態框
+         */
+        closeAllModals() {
+          const modals = DOMManager.queryAll('ion-modal');
+          modals.forEach(modal => {
+            if (modal.dismiss) {
+              modal.dismiss();
+            }
+          });
+        }
+
+        /**
+         * 顯示排序選項
+         */
+        showSortOptions() {
+          this.showToast('排序選項功能', 'primary');
         }
 
         /**
@@ -809,82 +1305,6 @@
         }
 
         /**
-         * 查看詳情
-         */
-        viewDetails(item) {
-          this.showToast(`查看 ${item.title} 的詳細資訊`, 'primary');
-          // 這裡可以實現導航到詳情頁面
-        }
-
-        /**
-         * 顯示 Ionic 吐司
-         */
-        async showToast(message, color = 'primary') {
-          const toast = document.createElement('ion-toast');
-          toast.message = message;
-          toast.duration = 2000;
-          toast.color = color;
-          toast.position = 'bottom';
-
-          document.body.appendChild(toast);
-          await toast.present();
-        }
-
-        /**
-         * 處理下拉刷新
-         */
-        async handleRefresh(event) {
-          const loading = await this.showLoading('重新整理中...');
-          
-          try {
-            // 模擬網路請求
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            // 重新過濾資料
-            this.filterItems();
-            
-            await this.showToast('重新整理完成', 'success');
-          } catch (error) {
-            await this.showToast('重新整理失敗', 'danger');
-          } finally {
-            loading.dismiss();
-            event.target.complete();
-          }
-        }
-
-        /**
-         * 處理無限滾動
-         */
-        async handleInfiniteScroll(event) {
-          // 模擬載入更多資料
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          
-          // 這裡可以實現載入更多資料的邏輯
-          // this.loadMoreData();
-          
-          event.target.complete();
-          
-          // 如果沒有更多資料，禁用無限滾動
-          if (this.filteredItems.length >= 50) {
-            event.target.disabled = true;
-          }
-        }
-
-        /**
-         * 顯示載入中
-         */
-        async showLoading(message = '載入中...') {
-          const loading = document.createElement('ion-loading');
-          loading.message = message;
-          loading.spinner = 'crescent';
-
-          document.body.appendChild(loading);
-          await loading.present();
-          
-          return loading;
-        }
-
-        /**
          * 切換主題
          */
         toggleTheme(isDark) {
@@ -894,39 +1314,55 @@
         }
 
         /**
-         * 顯示創建模態框
+         * 獲取標籤顏色
          */
-        showCreateModal() {
-          this.showToast('創建新主題功能', 'primary');
+        getTagColor(tag) {
+          const colorMap = {
+            '教育': 'success', '詞典': 'success', '學習': 'success',
+            '社群': 'danger', '組織': 'danger', '管理': 'danger', 
+            '政策': 'warning', '結構': 'warning', '版本': 'warning',
+            '媒體': 'tertiary', '資料': 'tertiary', '網站': 'tertiary',
+            '百科': 'primary', '文獻': 'primary', '引用': 'primary',
+            '工具': 'dark', '條目': 'secondary'
+          };
+          return colorMap[tag] || 'primary';
         }
 
         /**
-         * 顯示進階篩選
+         * 顯示 Ionic 吐司
          */
-        showAdvancedFilter() {
-          this.showToast('進階篩選功能', 'primary');
-        }
-
-        /**
-         * 顯示排序選項
-         */
-        showSortOptions() {
-          this.showToast('排序選項功能', 'primary');
-        }
-
-        /**
-         * 初始化應用程式
-         */
-        async initializeApp() {
+        async showToast(message, color = 'primary') {
           try {
-            await this.initializeIonicComponents();
-            this.filterItems(); // 初始過濾
-            
-            console.log('Ionic 主題清單應用程式初始化完成');
+            const toast = DOMManager.create('ion-toast', {
+              properties: {
+                message,
+                duration: 2000,
+                color,
+                position: 'bottom'
+              }
+            });
+            document.body.appendChild(toast);
+            await toast.present();
           } catch (error) {
-            console.error('應用程式初始化失敗:', error);
-            this.showToast('應用程式初始化失敗', 'danger');
+            console.warn('顯示 Toast 失敗:', error);
           }
+        }
+
+        /**
+         * 主渲染函數
+         */
+        render() {
+          const filteredItems = this.dataManager.filterItems();
+          this.renderFilteredItems(filteredItems);
+          this.updateStatistics();
+          this.updateFilterStatus();
+        }
+
+        /**
+         * 銷毀應用程式
+         */
+        destroy() {
+          this.eventManager.destroy();
         }
       }
 
@@ -937,6 +1373,13 @@
       document.addEventListener('DOMContentLoaded', async () => {
         app = new IonicThemeListApp();
         await app.initializeApp();
+      });
+
+      // 頁面卸載時清理
+      window.addEventListener('beforeunload', () => {
+        if (app) {
+          app.destroy();
+        }
       });
     </script>
   </body>
